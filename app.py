@@ -9,8 +9,8 @@ def change_time_JST(u_time):
 
 # テキストからURLを抽出し、文字列として返す
 def findurl(string):
-    import re
-    urls = re.findall('https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', string)
+    import regex
+    urls = regex.findall('https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', string)
     link = ''
     for url in urls:
         link = link + url + ' '
