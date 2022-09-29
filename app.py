@@ -1,15 +1,13 @@
 
-#関数:　UTCをJSTに変換する
+# UTCをJSTに変換
 def change_time_JST(u_time):
-    #イギリスのtimezoneを設定するために再定義する
     utc_time = datetime(u_time.year, u_time.month,u_time.day, \
     u_time.hour,u_time.minute,u_time.second, tzinfo=timezone.utc)
-    #タイムゾーンを日本時刻に変換
     jst_time = utc_time.astimezone(pytz.timezone("Asia/Tokyo"))
-    # 文字列で返す
     str_time = jst_time.strftime("%Y-%m-%d_%H:%M:%S")
     return str_time
 
+# テキストからURLを抽出し、文字列として返す
 def findurl(string):
     import re
     urls = re.findall('https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', string)
@@ -25,14 +23,13 @@ import pytz
 import pandas as pd
 import streamlit as st
 
-#Twitter情報。
-#＊＊＊＊＊＊＊＊には自分自身のAPIキーなどを入力してください
+#Twitter情報
 consumer_key        = 'zzdCgpJKtFpFEypzwXZyhdPoM'
 consumer_secret     = 'eDwjw8WBGrjs3n7qNmV40chNcblPo2SATGvxrYOP2ylfitHqqF'
 access_token        = '99120036-4IxJhRYiY6YyQeXnuEBAotFD6kOM6eU8Kc7SCuxl4'
 access_token_secret = 'O7YULUDPd6pAnjr0K5jSjlXZRW0Z92ZYzgdGiuKuTf2Wr'
 
-#Twitterの認証
+#Twitter認証
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
@@ -41,12 +38,12 @@ api = tweepy.API(auth)
 api=tweepy.API(auth,wait_on_rate_limit=True)
 
 def gettweet(word):
-  # 検索条件の設定
+  # 検索条件
   search_word = word + ' min_faves:10 -filter:retweets'
-  #何件のツイートを取得するか
+  #取得件数
   item_number = 300
 
-  #検索条件を元にツイートを抽出
+  #ツイートを抽出
   tweets = tweepy.Cursor(api.search,q=search_word, tweet_mode='extended',result_type="mixed",lang='ja').items(item_number)
 
   #抽出したデータから必要な情報を取り出す
