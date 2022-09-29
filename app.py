@@ -10,6 +10,14 @@ def change_time_JST(u_time):
     str_time = jst_time.strftime("%Y-%m-%d_%H:%M:%S")
     return str_time
 
+def findurl(string):
+    import re
+    urls = re.findall('https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', string)
+    link = ''
+    for url in urls:
+        link = link + url + ' '
+    return link
+
 # ライブラリのインポート
 import tweepy
 from datetime import datetime,timezone
@@ -32,73 +40,63 @@ api = tweepy.API(auth)
 #　”wait_on_rate_limit = True”　利用制限にひっかかた時に必要時間待機する
 api=tweepy.API(auth,wait_on_rate_limit=True)
 
-# 検索条件の設定
-search_word = '清水区 min_faves:50 -filter:retweets'
-#何件のツイートを取得するか
-item_number = 300
+def gettweet(word):
+  # 検索条件の設定
+  search_word = word + ' min_faves:10 -filter:retweets'
+  #何件のツイートを取得するか
+  item_number = 300
 
-#検索条件を元にツイートを抽出
-tweets = tweepy.Cursor(api.search,q=search_word, tweet_mode='extended',result_type="mixed",lang='ja').items(item_number)
+  #検索条件を元にツイートを抽出
+  tweets = tweepy.Cursor(api.search,q=search_word, tweet_mode='extended',result_type="mixed",lang='ja').items(item_number)
 
-#抽出したデータから必要な情報を取り出す
-#取得したツイートを一つずつ取り出して必要な情報をtweet_dataに格納する
-tw_data = []
+  #抽出したデータから必要な情報を取り出す
+  #取得したツイートを一つずつ取り出して必要な情報をtweet_dataに格納する
+  tw_data = []
 
-for tweet in tweets:
-    #ツイート時刻とユーザのアカウント作成時刻を日本時刻にする
-    tweet_time = change_time_JST(tweet.created_at)
-    create_account_time = change_time_JST(tweet.user.created_at)
-    #tweet_dataの配列に取得したい情報を入れていく
-    tw_data.append([
-        # tweet.id,
-        tweet_time,
-        tweet.full_text,
-        tweet.favorite_count, 
-        tweet.retweet_count, 
-        # tweet.user.id, 
-        tweet.user.screen_name,
-        tweet.user.name,
-        # tweet.user.description,
-        # tweet.user.friends_count,
-        # tweet.user.followers_count,
-        # create_account_time,
-        # tweet.user.following,
-        # tweet.user.profile_image_url,
-        # tweet.user.profile_background_image_url,
-        # tweet.user.url
-                      ])
+  for tweet in tweets:
+      #ツイート時刻とユーザのアカウント作成時刻を日本時刻にする
+      tweet_time = change_time_JST(tweet.created_at)
+      create_account_time = change_time_JST(tweet.user.created_at)
+      #テキストからURLを抜き出す
+      tweet_urls=findurl(tweet.full_text)
+      #tweet_dataの配列に取得したい情報を入れていく
+      tw_data.append([
+          tweet_time,
+          tweet.full_text,
+          tweet_urls,
+          tweet.favorite_count, 
+          tweet.retweet_count, 
+          tweet.user.screen_name,
+          tweet.user.name
+                        ])
 
-#取り出したデータをpandasのDataFrameに変換
-#CSVファイルに出力するときの列の名前を定義
-labels=[
-    # 'ツイートID',
-    'ツイート時刻',
-    'ツイート本文',
-    'いいね数',
-    'リツイート数',
-    # 'ID',
-    'ユーザー名',
-    'アカウント名',
-    # '自己紹介文',
-    # 'フォロー数',
-    # 'フォロワー数',
-    # 'アカウント作成日時',
-    # '自分のフォロー状況',
-    # 'アイコン画像URL',
-    # 'ヘッダー画像URL',
-    # 'WEBサイト'
-    ]
+  #取り出したデータをpandasのDataFrameに変換
+  #CSVファイルに出力するときの列の名前を定義
+  labels=[
+      'ツイート時刻',
+      'ツイート本文',
+      '参考URL',
+      'いいね数',
+      'リツイート数',
+      'ユーザー名',
+      'アカウント名'
+      ]
 
-#tw_dataのリストをpandasのDataFrameに変換
-df = pd.DataFrame(tw_data,columns=labels)
+  #tw_dataのリストをpandasのDataFrameに変換
+  df = pd.DataFrame(tw_data,columns=labels)
+  return df
 
 #streamlit
-st.sidebar.title("清水区関連ツイートまとめアプリ")
+st.sidebar.title("清水区関連ツイートまとめ")
 st.sidebar.write("台風15号で被害を受けた清水区に関する情報")
 
 st.sidebar.write("")
+selected_item = st.sidebar.selectbox('表示キーワード',
+                              ['清水区', '清水区 飲料水', '清水区 お風呂 OR シャワー', '清水区 生活用水', '清水区 食料', '清水区 子育て', '清水区 車 被災', '静岡 コインランドリー OR 洗濯'])
+st.write(f'{selected_item}に関するツイート')
 
-st.table(df)
+
+st.table(gettweet(selected_item))
 
 st.sidebar.write("")
 st.sidebar.write("")
