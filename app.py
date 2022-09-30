@@ -8,13 +8,13 @@ def change_time_JST(u_time):
     return str_time
 
 # テキストからURLを抽出し、文字列として返す
-# def findurl(string):
-#     import regex
-#     urls = regex.findall('https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', string)
-#     link = ''
-#    for url in urls:
-#        link = link + url + ' '
-#    return link
+def findurl(string):
+    import regex
+    urls = regex.findall('https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', string)
+    link = ''
+    for url in urls:
+      link = link + url + ' '
+    return link
 
 # ライブラリのインポート
 import tweepy
@@ -55,12 +55,12 @@ def gettweet(word):
       tweet_time = change_time_JST(tweet.created_at)
       create_account_time = change_time_JST(tweet.user.created_at)
       #テキストからURLを抜き出す
-      #tweet_urls=findurl(tweet.full_text)
+      tweet_urls=findurl(tweet.full_text)
       #tweet_dataの配列に取得したい情報を入れていく
       tw_data.append([
           tweet_time,
           tweet.full_text,
-          # tweet_urls,
+          tweet_urls,
           tweet.favorite_count, 
           tweet.retweet_count, 
           tweet.user.screen_name,
@@ -72,7 +72,7 @@ def gettweet(word):
   labels=[
       'ツイート時刻',
       'ツイート本文',
-      # '参考URL',
+      '参考URL',
       'いいね数',
       'リツイート数',
       'ユーザー名',
